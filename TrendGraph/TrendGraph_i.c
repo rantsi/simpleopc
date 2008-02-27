@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Tue Feb 26 21:44:08 2008
+/* at Wed Feb 27 15:56:40 2008
  */
 /* Compiler settings for .\TrendGraph.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
