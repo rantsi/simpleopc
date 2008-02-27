@@ -16,10 +16,11 @@ void OpcHost::ListDaServers(CATID cid, CAtlArray<CString> &listOfProgIDs)
 {
 	CATID Implist[1];
 	Implist[0] = cid;
-	ATL::CComPtr<ICatInformation> iCatInfo;
+	CComPtr<ICatInformation> iCatInfo;
 
 	HRESULT result = CoCreateInstance (CLSID_StdComponentCategoriesMgr, NULL,CLSCTX_INPROC_SERVER, IID_ICatInformation,(void **)&iCatInfo);
-	if (FAILED(result)){
+	if (FAILED(result))
+	{
 		throw OpcException(CString("Failed to get IID_ICatInformation"));
 	}
 
@@ -35,10 +36,12 @@ void OpcHost::ListDaServers(CATID cid, CAtlArray<CString> &listOfProgIDs)
 	{
 		WCHAR *progID;
 		HRESULT res = ProgIDFromCLSID(glist, &progID);
-		if(FAILED(res)){
+		if(FAILED(res))
+		{
 			throw OpcException(CString("Failed to get ProgId from ClassId"));
 		}
-		else {
+		else 
+		{
 			USES_CONVERSION;
 			CString str(progID);
 //			char * str = OLE2T(progID);
@@ -57,7 +60,7 @@ OpcServer* OpcHost::ConnectDa(const CString & serverProgID){
 	HRESULT result = CLSIDFromProgID(wideName, &clsid);
 	if(FAILED(result))
 	{
-		throw OpcException("Failed to convert progID to class ID");
+		throw OpcException(CString("Failed to convert progID to class ID"));
 	}
 
 
@@ -65,21 +68,21 @@ OpcServer* OpcHost::ConnectDa(const CString & serverProgID){
 	result = CoGetClassObject(clsid, CLSCTX_LOCAL_SERVER, NULL, IID_IClassFactory, (void**)&iClassFactory);
 	if (FAILED(result))
 	{
-		throw OpcException("Failed get Class factory");
+		throw OpcException(CString("Failed get Class factory"));
 	}
 
 	ATL::CComPtr<IUnknown> iUnknown;
 	result = iClassFactory->CreateInstance(NULL, IID_IUnknown, (void**)&iUnknown);
 	if (FAILED(result))
 	{
-		throw OpcException("Failed get create OPC server ref");
+		throw OpcException(CString("Failed get create OPC server ref"));
 	}
 
 	CComPtr<IOPCServer> iOpcServer;
 	result = iUnknown->QueryInterface(IID_IOPCServer, (void**)&iOpcServer);
 	if (FAILED(result))
 	{
-		throw OpcException("Failed obtain IID_IOPCServer interface from server");
+		throw OpcException(CString("Failed obtain IID_IOPCServer interface from server"));
 	}
 
 	return new OpcServer(iOpcServer);
