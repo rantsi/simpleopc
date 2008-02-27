@@ -1,0 +1,51 @@
+// TrendGraph.idl : type library source for ActiveX Control project.
+
+// This file will be processed by the MIDL compiler tool to
+// produce the type library (TrendGraph.tlb) that will become a resource in
+// TrendGraph.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(2911BACA-4701-4A9C-B31E-EB9C7BA58188), version(1.0),
+  helpfile("TrendGraph.hlp"),
+  helpstring("TrendGraph ActiveX Control module"),
+  control ]
+library TrendGraphLib
+{
+	importlib(STDOLE_TLB);
+
+	//  Primary dispatch interface for CTrendGraphCtrl
+
+	[ uuid(E8644C23-411B-4678-A2AB-951196AC28A5),
+	  helpstring("Dispatch interface for TrendGraph Control")]
+	dispinterface _DTrendGraph
+	{
+		properties:
+		methods:
+			[id(1), helpstring("method Append")] void Append(DOUBLE newValue);
+	};
+
+	//  Event dispatch interface for CTrendGraphCtrl
+
+	[ uuid(BD179925-E263-4DAF-B656-DF960AFE9A54),
+	  helpstring("Event interface for TrendGraph Control") ]
+	dispinterface _DTrendGraphEvents
+	{
+		properties:
+			//  Event interface has no properties
+
+		methods:
+	};
+
+	//  Class information for CTrendGraphCtrl
+
+	[ uuid(58714506-5456-42EF-8849-E25F3E79C651),
+	  helpstring("TrendGraph Control"), control ]
+	coclass TrendGraph
+	{
+		[default] dispinterface _DTrendGraph;
+		[default, source] dispinterface _DTrendGraphEvents;
+	};
+
+};
