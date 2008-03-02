@@ -21,7 +21,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="1"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -192,6 +192,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\AsyncDataCallback.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Client.cpp"
 				>
 			</File>
@@ -216,11 +220,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OpcGroup.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OpcHost.cpp"
 				>
 			</File>
 			<File
+				RelativePath=".\OpcItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OpcItemData.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OpcServer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Property.cpp"
 				>
 			</File>
 			<File
@@ -243,12 +263,20 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\Transaction.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\AsyncDataCallback.h"
+				>
+			</File>
 			<File
 				RelativePath=".\Client.h"
 				>
@@ -274,11 +302,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OpcGroup.h"
+				>
+			</File>
+			<File
 				RelativePath=".\OpcHost.h"
 				>
 			</File>
 			<File
+				RelativePath=".\OpcItem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OpcItemData.h"
+				>
+			</File>
+			<File
 				RelativePath=".\OpcServer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Property.h"
 				>
 			</File>
 			<File
@@ -287,6 +331,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Transaction.h"
 				>
 			</File>
 		</Filter>
