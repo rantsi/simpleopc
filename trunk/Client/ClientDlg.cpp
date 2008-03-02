@@ -190,12 +190,19 @@ void CClientDlg::OnCbnSelchangeCombo1()
 	// TODO: Set these and their values to be updated on timer...
 	CAtlArray<CString> names;
 	m_OpcServer->GetItemNames(names);
+	CAtlArray<OpcItem*> itemsCreated;
 
+	unsigned long refreshRate;
+	OpcGroup* group = m_OpcServer->MakeGroup("TestGroup", true, 1000, refreshRate, 0.0);
+	
 	for (unsigned i = 0; i < names.GetCount(); i++)
 	{
-		int idx = m_LstTags.InsertItem(i, names.GetAt(i));
-		unsigned long refreshRate;
-		OpcGroup* group = m_OpcServer->MakeGroup("TestGroup", true, 1000, refreshRate, 0.0);
-//		m_LstTags.SetItemText(idx, 1, 
+		//int idx = m_LstTags.InsertItem(i, names.GetAt(i));
+		//m_ItemsLstIdx.SetAt(names.GetAt(i), idx);
+		itemsCreated.Add(group->AddItem(names.GetAt(i), true));
 	}
+
+	OpcItem_DataMap values;
+	group->ReadSync(itemsCreated, values, OPC_DS_DEVICE);
+
 }
