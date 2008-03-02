@@ -4,6 +4,8 @@
 #pragma once
 #include "afxwin.h"
 #include "OpcServer.h"
+#include "OpcItem.h"
+#include "OpcGroup.h"
 #include "afxcmn.h"
 
 // CClientDlg dialog
@@ -20,6 +22,7 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
+	void OnDataChange(OpcGroup& group, CAtlMap<OpcItem *, OpcItemData *> & changes);
 
 // Implementation
 protected:
@@ -39,4 +42,6 @@ protected:
 
 private:
 	OpcServer* m_OpcServer;
+	CAtlMap<CString, int> m_ItemsLstIdx;
+
 };
