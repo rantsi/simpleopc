@@ -9,7 +9,7 @@
 #include "afxcmn.h"
 
 // CClientDlg dialog
-class CClientDlg : public CDialog
+class CClientDlg : public CDialog, ITransactionComplete, IAsynchDataCallback
 {
 // Construction
 public:
@@ -36,12 +36,13 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnCbnSelchangeCombo1();
+	void Complete(Transaction &transaction);
 protected:
 	CComboBox m_CmbServers;
 	CListCtrl m_LstTags;
 
 private:
 	OpcServer* m_OpcServer;
-	CAtlMap<CString, int> m_ItemsLstIdx;
-
+	CAtlArray<OpcItem*> itemsCreated;
+	CAtlMap<CString*,int> m_LstIndexes; 
 };

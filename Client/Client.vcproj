@@ -298,6 +298,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\opcerror.h"
+				>
+			</File>
+			<File
 				RelativePath=".\OpcException.h"
 				>
 			</File>

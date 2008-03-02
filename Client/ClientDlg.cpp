@@ -6,6 +6,7 @@
 #include "ClientDlg.h"
 #include "OpcHost.h"
 #include "OpcGroup.h"
+#include "OpcException.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -184,25 +185,69 @@ void CClientDlg::OnCbnSelchangeCombo1()
 	m_OpcServer = OpcHost::ConnectDa(server);
 
 	m_LstTags.DeleteAllItems();
-	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, -1, 0);
-	m_LstTags.InsertColumn(1, "Value", LVCFMT_LEFT, -1, 0);
+	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, 120, 0);
+	m_LstTags.InsertColumn(1, "Value", LVCFMT_LEFT, 100, 0);
 
-	// TODO: Set these and their values to be updated on timer...
-	CAtlArray<CString> names;
-	m_OpcServer->GetItemNames(names);
-	CAtlArray<OpcItem*> itemsCreated;
-
+	// TODO: Set these and their values to be updat ed on timer...
+	
 	unsigned long refreshRate;
 	OpcGroup* group = m_OpcServer->MakeGroup("TestGroup", true, 1000, refreshRate, 0.0);
-	
-	for (unsigned i = 0; i < names.GetCount(); i++)
+	group->EnableAsynch(*this);
+
+	itemsCreated.Add(group->AddItem(CString("Bucket Brigade.Real8"), true));
+	itemsCreated.Add(group->AddItem(CString("Random.Real8"), true));
+	group->ReadAsync(itemsCreated, this);
+}
+
+void CClientDlg::Complete(Transaction &transaction)
+{
+	m_LstTags.DeleteAllItems();
+
+	for(unsigned i = 0; i < itemsCreated.GetCount(); i++)
 	{
-		//int idx = m_LstTags.InsertItem(i, names.GetAt(i));
-		//m_ItemsLstIdx.SetAt(names.GetAt(i), idx);
-		itemsCreated.Add(group->AddItem(names.GetAt(i), true));
+		OpcItem* item = itemsCreated.GetAt(i);
+		const OpcItemData* data = transaction.GetItemValue(item);
+
+		int idx = m_LstTags.InsertItem(i, itemsCreated.GetAt(i)->GetName());
+		CString tmp;
+		tmp.AppendFormat("%d", data->vDataValue.dblVal);
+		m_LstTags.SetItemText(idx, 1, tmp);
+		m_LstIndexes.SetAt(&itemsCreated.GetAt(i)->GetName(), idx);
+	}
+}
+
+void CClientDlg::OnDataChange(OpcGroup& group, CAtlMap<OpcItem *, OpcItemData *> & changes)
+{
+	POSITION pos = changes.GetStartPosition();
+
+	while (pos != NULL)
+	{
+		OpcItem* item = changes.GetKeyAt(pos);
+		OpcItemData* data = changes.GetValueAt(pos);
+
+		POSITION idxpos = m_LstIndexes.Lookup(&item->GetName());
+
+		int idx = 0;
+		if (idxpos != NULL)
+		{
+			idx = m_LstIndexes.GetValueAt(idxpos);
+			CString tmp;
+			tmp.AppendFormat("%d", data->vDataValue.dblVal);
+			m_LstTags.SetItemText(idx, 1, tmp);
+		}
+
+		++pos;
 	}
 
-	OpcItem_DataMap values;
-	group->ReadSync(itemsCreated, values, OPC_DS_DEVICE);
+	//for(unsigned i = 0; i < itemsCreated.GetCount(); i++)
+	//{
+	//	OpcItem* item = itemsCreated.GetAt(i);
+	//	const OpcItemData* data = transaction.GetItemValue(item);
+
+	//	int idx = m_LstTags.InsertItem(i, itemsCreated.GetAt(i)->GetName());
+	//	CString tmp;
+	//	tmp.AppendFormat("%d", data->vDataValue.dblVal);
+	//	m_LstTags.SetItemText(idx, 1, tmp);
+	//}
 
 }
