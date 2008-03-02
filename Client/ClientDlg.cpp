@@ -4,10 +4,8 @@
 #include "stdafx.h"
 #include "Client.h"
 #include "ClientDlg.h"
-#include "OPCCOMN.H"
-#include "opcda.h"
-#include "OpcEnum.h"
-
+#include "OpcHost.h"
+#include "OpcGroup.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,15 +49,23 @@ END_MESSAGE_MAP()
 
 
 CClientDlg::CClientDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CClientDlg::IDD, pParent)
+	: CDialog(CClientDlg::IDD, pParent),
+	m_OpcServer(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
+
+CClientDlg::~CClientDlg()
+{
+	// TODO: Release m_OpcServer
+}
+
 
 void CClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO1, m_CmbServers);
+	DDX_Control(pDX, IDC_LIST1, m_LstTags);
 }
 
 BEGIN_MESSAGE_MAP(CClientDlg, CDialog)
@@ -103,8 +109,15 @@ BOOL CClientDlg::OnInitDialog()
 	ShowWindow(SW_MAXIMIZE);
 
 	// TODO: Add extra initialization here
-	HRESULT	result = CoInitialize(NULL);
+	OpcHost::Init();
 
+	CAtlArray<CString> localServerList;
+	OpcHost::ListDaServers(IID_CATID_OPCDAServer20, localServerList);
+
+	for (unsigned i = 0; i < localServerList.GetCount(); i++)
+	{
+		m_CmbServers.AddString(localServerList.GetAt(i));
+	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -158,11 +171,31 @@ HCURSOR CClientDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-void CClientDlg::ListServers()
-{
-}
 void CClientDlg::OnCbnSelchangeCombo1()
 {
-	// TODO: Add your control notification handler code here
+	if (m_OpcServer != 0)
+	{
+		// TODO: Release m_OpcServer
+	}
+
+	CString server;
+	m_CmbServers.GetLBText(m_CmbServers.GetCurSel(), server);
+
+	m_OpcServer = OpcHost::ConnectDa(server);
+
+	m_LstTags.DeleteAllItems();
+	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, -1, 0);
+	m_LstTags.InsertColumn(1, "Value", LVCFMT_LEFT, -1, 0);
+
+	// TODO: Set these and their values to be updated on timer...
+	CAtlArray<CString> names;
+	m_OpcServer->GetItemNames(names);
+
+	for (unsigned i = 0; i < names.GetCount(); i++)
+	{
+		int idx = m_LstTags.InsertItem(i, names.GetAt(i));
+		unsigned long refreshRate;
+		OpcGroup* group = m_OpcServer->MakeGroup("TestGroup", true, 1000, refreshRate, 0.0);
+//		m_LstTags.SetItemText(idx, 1, 
+	}
 }

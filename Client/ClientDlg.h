@@ -3,7 +3,8 @@
 
 #pragma once
 #include "afxwin.h"
-
+#include "OpcServer.h"
+#include "afxcmn.h"
 
 // CClientDlg dialog
 class CClientDlg : public CDialog
@@ -11,6 +12,7 @@ class CClientDlg : public CDialog
 // Construction
 public:
 	CClientDlg(CWnd* pParent = NULL);	// standard constructor
+	~CClientDlg();
 
 // Dialog Data
 	enum { IDD = IDD_CLIENT_DIALOG };
@@ -22,7 +24,6 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
-	void ListServers();
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -34,4 +35,8 @@ public:
 	afx_msg void OnCbnSelchangeCombo1();
 protected:
 	CComboBox m_CmbServers;
+	CListCtrl m_LstTags;
+
+private:
+	OpcServer* m_OpcServer;
 };

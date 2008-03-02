@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "Client.h"
 #include "ClientDlg.h"
+#include "OpcHost.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,21 +73,10 @@ BOOL CClientApp::InitInstance()
 		//  dismissed with Cancel
 	}
 
+	OpcHost::Stop();
+
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 	return FALSE;
-}
-
-bool CClientApp::GetOpcInstance()
-{
-	//HRESULT hr;
-	//
-	////Added Tuomas
-	//AfxOleInit();
-
-	//Ol
-	//hr = CoCreateInstance(
-
-	return true;
 }
 

@@ -1,7 +1,8 @@
 #include "StdAfx.h"
 #include "OpcServer.h"
 #include "OpcException.h"
-
+#include "OpcHost.h"
+#include "OpcGroup.h"
 
 
 OpcServer::OpcServer(CComPtr<IOPCServer> &opcServerInterface){
@@ -20,13 +21,7 @@ OpcServer::OpcServer(CComPtr<IOPCServer> &opcServerInterface){
 	}
 }
 
-
-
-OpcServer::~OpcServer()
-{
-}
-
-void OpcServer::getItemNames(CAtlArray<CString> & opcItemNames)
+void OpcServer::GetItemNames(CAtlArray<CString> & opcItemNames)
 {
 	if (!iOpcNamespace) 
 		return;
@@ -34,7 +29,6 @@ void OpcServer::getItemNames(CAtlArray<CString> & opcItemNames)
 	OPCNAMESPACETYPE nameSpaceType;
 	HRESULT result = iOpcNamespace->QueryOrganization(&nameSpaceType);
 
-	USES_CONVERSION;
 	int v = 0;
 	WCHAR emptyString[] = {0};
 	//result = iOpcNamespace->ChangeBrowsePosition(OPC_BROWSE_TO,emptyString);
@@ -56,11 +50,15 @@ void OpcServer::getItemNames(CAtlArray<CString> & opcItemNames)
 		result = iOpcNamespace->GetItemID(str, &fullName);
 		if (SUCCEEDED(result))
 		{
-			USES_CONVERSION;
 			CString cStr(fullName);
 			opcItemNames.Add(cStr);
-			COPCClient::comFree(fullName);
+			OpcHost::ComFree(fullName);
 		}
-		COPCClient::comFree(str);
+		OpcHost::ComFree(str);
 	}
+}
+
+OpcGroup* OpcServer::MakeGroup(const CString & groupName, bool active, unsigned long reqUpdateRate_ms, unsigned long &revisedUpdateRate_ms, float deadBand)
+{
+	return new OpcGroup(groupName, active, reqUpdateRate_ms, revisedUpdateRate_ms, deadBand, *this);
 }
