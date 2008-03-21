@@ -14,7 +14,7 @@ OpcItemData::OpcItemData(FILETIME time, WORD qual, VARIANT & val, HRESULT err)
 	HRESULT result = VariantCopy( &vDataValue, &val);
 	if (FAILED(result))
 	{
-		throw OpcException("VarCopy failed");
+		throw OpcException("VariantCopy failed");
 	}
 
 	ftTimeStamp = time;
@@ -37,7 +37,7 @@ void OpcItemData::Set(OPCITEMSTATE &itemState)
 	HRESULT result = VariantCopy( &vDataValue, &itemState.vDataValue);
 	if (FAILED(result))
 	{
-		throw OpcException("VarCopy failed");
+		throw OpcException("VariantCopy failed");
 	}
 
 	ftTimeStamp = itemState.ftTimeStamp;
@@ -50,7 +50,7 @@ void OpcItemData::Set(FILETIME time, WORD qual, VARIANT & val)
 	HRESULT result = VariantCopy( &vDataValue, &val);
 	if (FAILED(result))
 	{
-		throw OpcException("VarCopy failed");
+		throw OpcException("VariantCopy failed");
 	}
 
 	ftTimeStamp = time;
@@ -62,7 +62,7 @@ OpcItemData & OpcItemData::operator=(OpcItemData &itemData)
 	HRESULT result = VariantCopy( &vDataValue, &(itemData.vDataValue));
 	if (FAILED(result))
 	{
-		throw OpcException("VarCopy failed");
+		throw OpcException("VariantCopy failed");
 	}
 
 	ftTimeStamp = itemData.ftTimeStamp;

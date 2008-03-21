@@ -45,5 +45,9 @@ public:
 	};
 protected:
 	void Append(DOUBLE newValue);
+
+private:
+	DOUBLE m_minValue;
+	DOUBLE m_maxValue;
 };
 

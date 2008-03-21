@@ -67,6 +67,10 @@ void CClientDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO1, m_CmbServers);
 	DDX_Control(pDX, IDC_LIST1, m_LstTags);
+	DDX_Control(pDX, IDC_NTGRAPHCTRL3, m_graph3);
+	DDX_Control(pDX, IDC_NTGRAPHCTRL2, m_graph2);
+	DDX_Control(pDX, IDC_NTGRAPHCTRL1, m_graph1);
+	DDX_Control(pDX, IDC_NTGRAPHCTRL4, m_graph4);
 }
 
 BEGIN_MESSAGE_MAP(CClientDlg, CDialog)
@@ -179,75 +183,82 @@ void CClientDlg::OnCbnSelchangeCombo1()
 		// TODO: Release m_OpcServer
 	}
 
+	m_LstTags.DeleteAllItems();
+
 	CString server;
 	m_CmbServers.GetLBText(m_CmbServers.GetCurSel(), server);
 
 	m_OpcServer = OpcHost::ConnectDa(server);
 
 	m_LstTags.DeleteAllItems();
-	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, 120, 0);
+	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, 180, 0);
 	m_LstTags.InsertColumn(1, "Value", LVCFMT_LEFT, 100, 0);
 
 	// TODO: Set these and their values to be updat ed on timer...
 	
 	unsigned long refreshRate;
-	OpcGroup* group = m_OpcServer->MakeGroup("TestGroup", true, 1000, refreshRate, 0.0);
+	OpcGroup* group = m_OpcServer->MakeGroup("ListGroup", true, 1000, refreshRate, 0.0);
 	group->EnableAsynch(*this);
 
-	itemsCreated.Add(group->AddItem(CString("Bucket Brigade.Real8"), true));
-	itemsCreated.Add(group->AddItem(CString("Random.Real8"), true));
-	group->ReadAsync(itemsCreated, this);
+	CAtlArray<OpcItem*> m_listItems;
+	m_listItems.Add(group->AddItem(CString("Bucket Brigade.Real8"), true));
+	m_listItems.Add(group->AddItem(CString("Random.Real8"), true));
+	group->ReadAsync(m_listItems, this);
+
+	OpcGroup* graphGroup = m_OpcServer->MakeGroup("GraphGroup", true, 1000, refreshRate, 0.0);
+	graphGroup->EnableAsynch(*this);
+
+	CAtlArray<OpcItem*> m_graphItems;
+	m_graphItems.Add(graphGroup->AddItem(CString("Bucket Brigade.Real8"), true));
+	m_graphItems.Add(graphGroup->AddItem(CString("Random.Real8"), true));
+	graphGroup->ReadAsync(m_graphItems, this);
+
 }
 
 void CClientDlg::Complete(Transaction &transaction)
 {
-	m_LstTags.DeleteAllItems();
 
-	for(unsigned i = 0; i < itemsCreated.GetCount(); i++)
+
+	// Just items in list are here
+	for(unsigned i = 0; i < m_listItems.GetCount(); i++)
 	{
-		OpcItem* item = itemsCreated.GetAt(i);
+		OpcItem* item = m_listItems.GetAt(i);
 		const OpcItemData* data = transaction.GetItemValue(item);
 
-		int idx = m_LstTags.InsertItem(i, itemsCreated.GetAt(i)->GetName());
+		int idx = m_LstTags.InsertItem(i, m_listItems.GetAt(i)->GetName());
 		CString tmp;
 		tmp.AppendFormat("%d", data->vDataValue.dblVal);
 		m_LstTags.SetItemText(idx, 1, tmp);
-		m_LstIndexes.SetAt(&itemsCreated.GetAt(i)->GetName(), idx);
+		m_LstIndexes.SetAt(&m_listItems.GetAt(i)->GetName(), idx);
 	}
 }
 
 void CClientDlg::OnDataChange(OpcGroup& group, CAtlMap<OpcItem *, OpcItemData *> & changes)
 {
-	POSITION pos = changes.GetStartPosition();
-
-	while (pos != NULL)
+	if (group.GetName() == "ListGroup")
 	{
-		OpcItem* item = changes.GetKeyAt(pos);
-		OpcItemData* data = changes.GetValueAt(pos);
+		POSITION pos = changes.GetStartPosition();
 
-		POSITION idxpos = m_LstIndexes.Lookup(&item->GetName());
-
-		int idx = 0;
-		if (idxpos != NULL)
+		while (pos != NULL)
 		{
-			idx = m_LstIndexes.GetValueAt(idxpos);
-			CString tmp;
-			tmp.AppendFormat("%d", data->vDataValue.dblVal);
-			m_LstTags.SetItemText(idx, 1, tmp);
+			OpcItem* item = changes.GetKeyAt(pos);
+			OpcItemData* data = changes.GetValueAt(pos);
+
+			POSITION idxpos = m_LstIndexes.Lookup(&item->GetName());
+
+			int idx = 0;
+			if (idxpos != NULL)
+			{
+				idx = m_LstIndexes.GetValueAt(idxpos);
+				CString tmp;
+				tmp.AppendFormat("%d", data->vDataValue.dblVal);
+				m_LstTags.SetItemText(idx, 1, tmp);
+			}
+
+			++pos;
 		}
-
-		++pos;
 	}
-
-	//for(unsigned i = 0; i < itemsCreated.GetCount(); i++)
-	//{
-	//	OpcItem* item = itemsCreated.GetAt(i);
-	//	const OpcItemData* data = transaction.GetItemValue(item);
-
-	//	int idx = m_LstTags.InsertItem(i, itemsCreated.GetAt(i)->GetName());
-	//	CString tmp;
-	//	tmp.AppendFormat("%d", data->vDataValue.dblVal);
-	//	m_LstTags.SetItemText(idx, 1, tmp);
-	//}
-
+	else if (group.GetName() == "GraphGroup")
+	{
+	}
 }

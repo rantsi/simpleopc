@@ -9,7 +9,7 @@ PropertyValue::PropertyValue(const PropertyDescription &desc, VARIANT &val):prop
 	HRESULT result = VariantCopy( &value, &val);
 	if (FAILED(result))
 	{
-		throw OpcException("VarCopy failed", result);
+		throw OpcException("VariantCopy failed", result);
 	}
 }
 

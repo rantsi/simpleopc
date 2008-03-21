@@ -117,7 +117,9 @@ BOOL CTrendGraphCtrl::CTrendGraphCtrlFactory::UpdateRegistry(BOOL bRegister)
 CTrendGraphCtrl::CTrendGraphCtrl()
 {
 	InitializeIIDs(&IID_DTrendGraph, &IID_DTrendGraphEvents);
-	// TODO: Initialize your control's instance data here.
+	
+	m_minValue = 0;
+	m_maxValue = 0;
 }
 
 
@@ -140,8 +142,12 @@ void CTrendGraphCtrl::OnDraw(
 		return;
 
 	// TODO: Replace the following code with your own drawing code.
-	pdc->FillRect(rcBounds, CBrush::FromHandle((HBRUSH)GetStockObject(WHITE_BRUSH)));
-	pdc->Ellipse(rcBounds);
+	pdc->FillRect(rcBounds, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+//	pdc->Rect(rcBounds);
+	//pdc->Ellipse(rcBounds);
+
+
+
 
 	if (!IsOptimizedDraw())
 	{

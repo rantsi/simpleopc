@@ -7,6 +7,7 @@
 #include "OpcItem.h"
 #include "OpcGroup.h"
 #include "afxcmn.h"
+#include "ntgraphctrl3.h"
 
 // CClientDlg dialog
 class CClientDlg : public CDialog, ITransactionComplete, IAsynchDataCallback
@@ -43,6 +44,12 @@ protected:
 
 private:
 	OpcServer* m_OpcServer;
-	CAtlArray<OpcItem*> itemsCreated;
+	CAtlArray<OpcItem*> m_listItems;
+	CAtlArray<OpcItem*> m_graphItems;
 	CAtlMap<CString*,int> m_LstIndexes; 
+public:
+	CNtgraphctrl3 m_graph3;
+	CNtgraphctrl3 m_graph2;
+	CNtgraphctrl3 m_graph1;
+	CNtgraphctrl3 m_graph4;
 };
