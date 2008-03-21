@@ -204,6 +204,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ntgraphctrl3.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\opccomn_i.c"
 				>
 			</File>
@@ -274,6 +278,14 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\_Font.h"
+				>
+			</File>
+			<File
+				RelativePath=".\_Picture.h"
+				>
+			</File>
+			<File
 				RelativePath=".\AsyncDataCallback.h"
 				>
 			</File>
@@ -283,6 +295,10 @@
 			</File>
 			<File
 				RelativePath=".\ClientDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ntgraphctrl3.h"
 				>
 			</File>
 			<File
@@ -369,6 +385,10 @@
 		<Global
 			Name="RESOURCE_FILE"
 			Value="Client.rc"
+		/>
+		<Global
+			Name="{C9FE01C2-2746-479B-96AB-E0BE9931B018}"
+			Value="CNtgraphctrl3"
 		/>
 	</Globals>
 </VisualStudioProject>

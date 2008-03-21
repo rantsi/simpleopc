@@ -264,7 +264,7 @@ void OpcGroup::DisableAsynch()
 	}
 	iAsynchDataCallbackConnectionPoint->Unadvise(callbackHandle);
 	iAsynchDataCallbackConnectionPoint = NULL;
-	asynchDataCallBackHandler = NULL;// WE DO NOT DELETE callbackHandler, let the COM ref counting take care of that
+	asynchDataCallBackHandler = NULL;// DO NOT DELETE callbackHandler, let the COM ref counting take care of that
 	userAsynchCBHandler = NULL;
 }
 
