@@ -46,6 +46,21 @@ const OpcItemData* Transaction::GetItemValue(OpcItem *item) const
 	return pair->m_value;
 }
 
+const CAtlArray<OpcItem*>* Transaction::GetItems()
+{
+	POSITION pos = opcData.GetStartPosition();
+
+	CAtlArray<OpcItem*> items;
+
+	while (pos != NULL)
+	{
+		items.Add(opcData.GetKeyAt(pos));
+		++pos;
+	}
+
+	return &items;
+}
+
 void Transaction::SetCompleted()
 {
 	completed = TRUE;

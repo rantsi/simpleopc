@@ -36,7 +36,9 @@ public:
 
 	// return Value stored for a given opc item.
 	const OpcItemData* GetItemValue(OpcItem *item) const;
-			
+
+	const CAtlArray<OpcItem*>* GetItems();
+
 	// trigger completion of the transaction.
 	void SetCompleted();
 

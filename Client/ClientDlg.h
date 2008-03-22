@@ -38,15 +38,19 @@ protected:
 public:
 	afx_msg void OnCbnSelchangeCombo1();
 	void Complete(Transaction &transaction);
+
 protected:
 	CComboBox m_CmbServers;
 	CListCtrl m_LstTags;
 
 private:
 	OpcServer* m_OpcServer;
-	CAtlArray<OpcItem*> m_listItems;
-	CAtlArray<OpcItem*> m_graphItems;
+//	CAtlMap<CString*, DOUBLE> m_listItems;
+	CAtlMap<CString*, DOUBLE> m_itemValues;
 	CAtlMap<CString*,int> m_LstIndexes; 
+	HANDLE m_tmrQueue;
+	HANDLE m_timer;
+	HANDLE m_mutex;
 public:
 	CNtgraphctrl3 m_graph3;
 	CNtgraphctrl3 m_graph2;
