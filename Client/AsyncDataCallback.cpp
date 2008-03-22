@@ -98,7 +98,6 @@ STDMETHODIMP AsyncDataCallback::OnWriteComplete(DWORD Transid, OPCHANDLE grphand
 	// TODO this is bad  - server could corrupt address - need to use look up table
 	Transaction & trans = *(Transaction *)Transid; 
 
-	// see page 145 - number of items returned may be less than sent
 	for (unsigned i = 0; i < count; i++)
 	{
 		// TODO this is bad  - server could corrupt address - need to use look up table
@@ -141,7 +140,6 @@ OpcItemData * AsyncDataCallback::MakeOpcDataItem(VARIANT& value, WORD quality, F
 void AsyncDataCallback::UpdateOpcData(OpcItem_DataMap &opcData, DWORD count, OPCHANDLE * clienthandles, 
 	VARIANT* values, WORD * quality,FILETIME * time, HRESULT * errors)
 {
-	// see page 136 - returned arrays may be out of order
 	for (unsigned i = 0; i < count; i++)
 	{
 		// TODO this is bad  - server could corrupt address - need to use look up table

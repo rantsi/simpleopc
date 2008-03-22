@@ -40,25 +40,10 @@ const OpcItemData* Transaction::GetItemValue(OpcItem *item) const
 	const CAtlMap<OpcItem *, OpcItemData *>::CPair* pair = opcData.Lookup(item);
 	if (!pair) 
 	{
-		throw OpcException("Value for item is not known.");
+		return 0;
 	}
 
 	return pair->m_value;
-}
-
-const CAtlArray<OpcItem*>* Transaction::GetItems()
-{
-	POSITION pos = opcData.GetStartPosition();
-
-	CAtlArray<OpcItem*> items;
-
-	while (pos != NULL)
-	{
-		items.Add(opcData.GetKeyAt(pos));
-		++pos;
-	}
-
-	return &items;
 }
 
 void Transaction::SetCompleted()
