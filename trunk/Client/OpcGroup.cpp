@@ -133,7 +133,7 @@ Transaction * OpcGroup::ReadAsync(CAtlArray<OpcItem *>& items, ITransactionCompl
 		}
 		if (failCount == items.GetCount())
 		{
-			trans->SetCompleted(); // if all items return error then no callback will occur. p 101
+			trans->SetCompleted(); // if all items return error then no callback will occur.
 		}
 		
 		OpcHost::ComFree(individualResults);

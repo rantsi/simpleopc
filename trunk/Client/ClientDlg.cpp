@@ -12,10 +12,6 @@
 #define new DEBUG_NEW
 #endif
 
-VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired)
-{
-	//TODO: Update display
-}
 
 // CAboutDlg dialog used for App About
 
@@ -55,16 +51,22 @@ END_MESSAGE_MAP()
 
 CClientDlg::CClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CClientDlg::IDD, pParent),
-	m_OpcServer(0)
+	m_OpcServer(0), m_graphPoint(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_igName1 = "Graph.Graph Item 1";
+	m_igName2 = "Graph.Graph Item 2";
+	m_igName3 = "Graph.Graph Item 3";
+	m_igName4 = "Graph.Graph Item 4";
+	m_ilName1 = "List.List Item 1";
+	m_ilName2 = "List.List Item 2";
+	m_ilName3 = "List.List Item 3";
 }
 
 CClientDlg::~CClientDlg()
 {
 	// TODO: Release m_OpcServer
-	CloseHandle(m_mutex);
-	DeleteTimerQueue(m_tmrQueue);
+	DeleteCriticalSection(m_mutex);
 }
 
 
@@ -85,6 +87,7 @@ BEGIN_MESSAGE_MAP(CClientDlg, CDialog)
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
 	ON_CBN_SELCHANGE(IDC_COMBO1, &CClientDlg::OnCbnSelchangeCombo1)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -117,12 +120,12 @@ BOOL CClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	ShowWindow(SW_MAXIMIZE);
+	ShowWindow(SW_NORMAL);
 
 	// TODO: Add extra initialization here
 	
-	m_mutex = CreateMutex(NULL,  FALSE, "");
-	m_tmrQueue = CreateTimerQueue();
+	m_mutex = new CRITICAL_SECTION;
+	InitializeCriticalSection(m_mutex);
 	OpcHost::Init();
 
 	CAtlArray<CString> localServerList;
@@ -148,7 +151,7 @@ void CClientDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		CDialog::OnSysCommand(nID, lParam);
 	}
 }
-
+ 
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
@@ -192,8 +195,6 @@ void CClientDlg::OnCbnSelchangeCombo1()
 		// TODO: Release m_OpcServer
 	}
 
-	m_LstTags.DeleteAllItems();
-
 	CString server;
 	m_CmbServers.GetLBText(m_CmbServers.GetCurSel(), server);
 
@@ -203,107 +204,156 @@ void CClientDlg::OnCbnSelchangeCombo1()
 	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, 180, 0);
 	m_LstTags.InsertColumn(1, "Value", LVCFMT_LEFT, 100, 0);
 
-	// TODO: Set these and their values to be updated on timer...
+	m_graph1.ClearGraph();
+	m_graph1.SetElement(0);
+	m_graph1.SetElementName(m_igName1);
+	m_graph1.SetElementIdentify(TRUE);
+	m_graph1.SetElementLineColor(RGB(255,0,0));
+	m_graph1.SetElementWidth (1);
+	m_graph1.SetElementSolidPoint(TRUE);
 
-	CreateTimerQueueTimer(&m_timer, m_tmrQueue, (WAITORTIMERCALLBACK)TimerRoutine, 0, 1000, 500, 0);
-	
+	m_graph2.ClearGraph();
+	m_graph2.SetElement(0);
+	m_graph2.SetElementName(m_igName2);
+	m_graph2.SetElementIdentify(TRUE);
+	m_graph2.SetElementLineColor(RGB(255,0,0));
+	m_graph2.SetElementWidth (1);
+	m_graph2.SetElementSolidPoint(TRUE);
+
+	m_graph3.ClearGraph();
+	m_graph3.SetElement(0);
+	m_graph3.SetElementName(m_igName3);
+	m_graph3.SetElementIdentify(TRUE);
+	m_graph3.SetElementLineColor(RGB(255,0,0));
+	m_graph3.SetElementWidth (1);
+	m_graph3.SetElementSolidPoint(TRUE);
+
+	m_graph4.ClearGraph();
+	m_graph4.SetElement(0);
+	m_graph4.SetElementName(m_igName4);
+	m_graph4.SetElementIdentify(TRUE);
+	m_graph4.SetElementLineColor(RGB(255,0,0));
+	m_graph4.SetElementWidth (1);
+	m_graph4.SetElementSolidPoint(TRUE);
+
+	int i = 0;
+	int idx = m_LstTags.InsertItem(i, m_ilName1);
+	m_LstTags.SetItemText(idx, 1, "0");
+	m_LstIndexes.SetAt(m_ilName1, idx);
+
+	i++;
+	idx = m_LstTags.InsertItem(i, m_ilName2);
+	m_LstTags.SetItemText(idx, 1, "0");
+	m_LstIndexes.SetAt(m_ilName2, idx);
+
+	i++;
+	idx = m_LstTags.InsertItem(i, m_ilName3);
+	m_LstTags.SetItemText(idx, 1, "0");
+	m_LstIndexes.SetAt(m_ilName3, idx);
+
 	unsigned long refreshRate;
-	OpcGroup* group = m_OpcServer->MakeGroup("ListGroup", true, 1000, refreshRate, 0.0);
+	OpcGroup* group = m_OpcServer->MakeGroup("List", true, 500, refreshRate, 0.0);
 	group->EnableAsynch(*this);
 
 	CAtlArray<OpcItem*> listItems;
-	listItems.Add(group->AddItem(CString("Bucket Brigade.Real8"), true));
-	listItems.Add(group->AddItem(CString("Random.Real8"), true));
+	listItems.Add(group->AddItem(m_ilName1, true));
+	listItems.Add(group->AddItem(m_ilName2, true));
+	listItems.Add(group->AddItem(m_ilName3, true));
+	m_allItems.Append(listItems);
 	group->ReadAsync(listItems, this);
 
-	//OpcGroup* graphGroup = m_OpcServer->MakeGroup("GraphGroup", true, 1000, refreshRate, 0.0);
-	//graphGroup->EnableAsynch(*this);
+	OpcGroup* graphGroup = m_OpcServer->MakeGroup("Graph", true, 500, refreshRate, 0.0);
+	graphGroup->EnableAsynch(*this);
 
-	//CAtlArray<OpcItem*> graphItems;
-	//graphItems.Add(graphGroup->AddItem(CString("Bucket Brigade.Real8"), true));
-	//graphItems.Add(graphGroup->AddItem(CString("Random.Real8"), true));
-	//graphGroup->ReadAsync(graphItems, this);
+	CAtlArray<OpcItem*> graphItems;
+	graphItems.Add(graphGroup->AddItem(m_igName1, true));
+	graphItems.Add(graphGroup->AddItem(m_igName2, true));
+	graphItems.Add(graphGroup->AddItem(m_igName3, true));
+	graphItems.Add(graphGroup->AddItem(m_igName4, true));
+	m_allItems.Append(graphItems);
+	graphGroup->ReadAsync(graphItems, this);
 
+	// TODO: Set these and their values to be updated on timer...
+	SetTimer(1, 250, NULL);
 }
 
 void CClientDlg::Complete(Transaction &transaction)
 {
-	WaitForSingleObject(m_mutex, INFINITE);
-	const CAtlArray<OpcItem*>* items = transaction.GetItems();
+	EnterCriticalSection(m_mutex);
 
-	for(unsigned i = 0; i < items->GetCount(); i++)
+	for(unsigned i = 0; i < m_allItems.GetCount(); i++)
 	{
-		CString name(items->GetAt(i)->GetName());
-		
-		m_itemValues.SetAt(&name, transaction.GetItemValue(items->GetAt(i))->vDataValue.dblVal);
+		CString name;
+		name.Append(m_allItems.GetAt(i)->GetName());
+
+		const OpcItemData* data = transaction.GetItemValue(m_allItems.GetAt(i));
+		if (data != 0)
+		{
+			m_itemValues.SetAt(m_allItems.GetAt(i)->GetName(), data->vDataValue.dblVal);
+		}
 	}
-	ReleaseMutex(m_mutex);
-
-	//// Just items in list are here
-	//for(unsigned i = 0; i < m_listItems.GetCount(); i++)
-	//{
-	//	OpcItem* item = m_listItems.GetKeyAt(i);
-	//	
-	//	const OpcItemData* data = transaction.GetItemValue(item);
-
-	//	int idx = m_LstTags.InsertItem(i, m_listItems.GetAt(i)->GetName());
-	//	CString tmp;
-	//	tmp.AppendFormat("%d", data->vDataValue.dblVal);
-	//	m_LstTags.SetItemText(idx, 1, tmp);
-	//	m_LstIndexes.SetAt(&m_listItems.GetAt(i)->GetName(), idx);
-	//}
-
+	LeaveCriticalSection(m_mutex);
 }
 
 void CClientDlg::OnDataChange(OpcGroup& group, CAtlMap<OpcItem *, OpcItemData *> & changes)
 {
-	WaitForSingleObject(m_mutex, INFINITE);
-		POSITION pos = changes.GetStartPosition();
+	EnterCriticalSection(m_mutex);
 
-		while (pos != NULL)
+	for(unsigned i = 0; i < m_allItems.GetCount(); i++)
+	{
+		CAtlMap<OpcItem*, OpcItemData*>::CPair* pos = changes.Lookup(m_allItems.GetAt(i));
+
+		if (pos != NULL)
 		{
 			OpcItem* item = changes.GetKeyAt(pos);
 			OpcItemData* data = changes.GetValueAt(pos);
 
-			CString name(item->GetName());
-			CAtlMap<CString*, DOUBLE>::CPair* p = m_itemValues.Lookup(&name);
-			if (p == NULL)
-			{
-				m_itemValues.SetAt(&name, data->vDataValue.dblVal);
-			}
-			else
+			CString name;
+			name.Append(item->GetName());
+			CRBMap<CString, DOUBLE>::CPair* p = m_itemValues.Lookup(item->GetName());
+			if (p != NULL)
 			{
 				p->m_value = data->vDataValue.dblVal;
 			}
-			++pos;
 		}
+	}
+	LeaveCriticalSection(m_mutex);
+}
 
-		ReleaseMutex(m_mutex);
+void CClientDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	m_graphPoint++;
 
-//	if (group.GetName() == "ListGroup")
-//	{
-//		POSITION pos = changes.GetStartPosition();
-//
-//		while (pos != NULL)
-//		{
-//			OpcItem* item = changes.GetKeyAt(pos);
-//			OpcItemData* data = changes.GetValueAt(pos);
-//
-//			POSITION idxpos = m_LstIndexes.Lookup(&item->GetName());
-//
-//			int idx = 0;
-//			if (idxpos != NULL)
-//			{
-//				idx = m_LstIndexes.GetValueAt(idxpos);
-//				CString tmp;
-//				tmp.AppendFormat("%d", data->vDataValue.dblVal);
-//				m_LstTags.SetItemText(idx, 1, tmp);
-//			}
-//
-//			++pos;
-//		}
-//	}
-//	else if (group.GetName() == "GraphGroup")
-//	{
-//	}
+	Plot(m_graph1, m_igName1);
+	Plot(m_graph2, m_igName2);
+	Plot(m_graph3, m_igName3);
+	Plot(m_graph4, m_igName4);
+
+	UpdateListValue(m_ilName1);
+	UpdateListValue(m_ilName2);
+	UpdateListValue(m_ilName3);
+
+	__super::OnTimer(nIDEvent);
+}
+
+void CClientDlg::Plot(CNtgraphctrl3& graph, CString& name)
+{
+	CRBMap<CString, DOUBLE>::CPair* p = m_itemValues.Lookup(name);
+	if (p != NULL)
+	{
+		graph.PlotXY(m_graphPoint, p->m_value, 0);
+		graph.AutoRange();
+	}
+}
+void CClientDlg::UpdateListValue(CString& name)
+{
+	CRBMap<CString, int>::CPair* idxpos = m_LstIndexes.Lookup(name);
+	CRBMap<CString, DOUBLE>::CPair* p = m_itemValues.Lookup(name);
+
+	if (idxpos != NULL && p != NULL)
+	{
+		CString tmp;
+		tmp.AppendFormat("%f", p->m_value);
+		m_LstTags.SetItemText(idxpos->m_value, 1, tmp);
+	}
 }

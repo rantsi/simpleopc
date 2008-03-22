@@ -104,7 +104,7 @@ Transaction* OpcItem::WriteAsynch(VARIANT &data, ITransactionComplete *transacti
 	if (FAILED(individualResults[0]))
 	{
 		trans->SetItemError(this,individualResults[0]);
-		trans->SetCompleted(); // if all items return error then no callback will occur. p 104
+		trans->SetCompleted(); // if all items return error then no callback will occur.
 	}
 
 	OpcHost::ComFree(individualResults);

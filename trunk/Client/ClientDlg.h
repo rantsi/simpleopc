@@ -38,22 +38,34 @@ protected:
 public:
 	afx_msg void OnCbnSelchangeCombo1();
 	void Complete(Transaction &transaction);
+	void UpdateDisplay();
 
 protected:
+	void Plot(CNtgraphctrl3& graph, CString& name);
+	void UpdateListValue(CString& name);
+
 	CComboBox m_CmbServers;
 	CListCtrl m_LstTags;
 
 private:
 	OpcServer* m_OpcServer;
-//	CAtlMap<CString*, DOUBLE> m_listItems;
-	CAtlMap<CString*, DOUBLE> m_itemValues;
-	CAtlMap<CString*,int> m_LstIndexes; 
-	HANDLE m_tmrQueue;
-	HANDLE m_timer;
-	HANDLE m_mutex;
+	CAtlArray<OpcItem*> m_allItems;
+	CRBMap<CString, DOUBLE> m_itemValues;
+	CRBMap<CString, int> m_LstIndexes; 
+	double m_graphPoint;
+	LPCRITICAL_SECTION m_mutex;
+
+	CString m_igName1;
+	CString m_igName2;
+	CString m_igName3;
+	CString m_igName4;
+	CString m_ilName1;
+	CString m_ilName2;
+	CString m_ilName3;
 public:
 	CNtgraphctrl3 m_graph3;
 	CNtgraphctrl3 m_graph2;
 	CNtgraphctrl3 m_graph1;
 	CNtgraphctrl3 m_graph4;
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };
