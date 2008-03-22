@@ -12,6 +12,10 @@
 #define new DEBUG_NEW
 #endif
 
+VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired)
+{
+	//TODO: Update display
+}
 
 // CAboutDlg dialog used for App About
 
@@ -59,6 +63,8 @@ CClientDlg::CClientDlg(CWnd* pParent /*=NULL*/)
 CClientDlg::~CClientDlg()
 {
 	// TODO: Release m_OpcServer
+	CloseHandle(m_mutex);
+	DeleteTimerQueue(m_tmrQueue);
 }
 
 
@@ -114,6 +120,9 @@ BOOL CClientDlg::OnInitDialog()
 	ShowWindow(SW_MAXIMIZE);
 
 	// TODO: Add extra initialization here
+	
+	m_mutex = CreateMutex(NULL,  FALSE, "");
+	m_tmrQueue = CreateTimerQueue();
 	OpcHost::Init();
 
 	CAtlArray<CString> localServerList;
@@ -194,49 +203,61 @@ void CClientDlg::OnCbnSelchangeCombo1()
 	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, 180, 0);
 	m_LstTags.InsertColumn(1, "Value", LVCFMT_LEFT, 100, 0);
 
-	// TODO: Set these and their values to be updat ed on timer...
+	// TODO: Set these and their values to be updated on timer...
+
+	CreateTimerQueueTimer(&m_timer, m_tmrQueue, (WAITORTIMERCALLBACK)TimerRoutine, 0, 1000, 500, 0);
 	
 	unsigned long refreshRate;
 	OpcGroup* group = m_OpcServer->MakeGroup("ListGroup", true, 1000, refreshRate, 0.0);
 	group->EnableAsynch(*this);
 
-	CAtlArray<OpcItem*> m_listItems;
-	m_listItems.Add(group->AddItem(CString("Bucket Brigade.Real8"), true));
-	m_listItems.Add(group->AddItem(CString("Random.Real8"), true));
-	group->ReadAsync(m_listItems, this);
+	CAtlArray<OpcItem*> listItems;
+	listItems.Add(group->AddItem(CString("Bucket Brigade.Real8"), true));
+	listItems.Add(group->AddItem(CString("Random.Real8"), true));
+	group->ReadAsync(listItems, this);
 
-	OpcGroup* graphGroup = m_OpcServer->MakeGroup("GraphGroup", true, 1000, refreshRate, 0.0);
-	graphGroup->EnableAsynch(*this);
+	//OpcGroup* graphGroup = m_OpcServer->MakeGroup("GraphGroup", true, 1000, refreshRate, 0.0);
+	//graphGroup->EnableAsynch(*this);
 
-	CAtlArray<OpcItem*> m_graphItems;
-	m_graphItems.Add(graphGroup->AddItem(CString("Bucket Brigade.Real8"), true));
-	m_graphItems.Add(graphGroup->AddItem(CString("Random.Real8"), true));
-	graphGroup->ReadAsync(m_graphItems, this);
+	//CAtlArray<OpcItem*> graphItems;
+	//graphItems.Add(graphGroup->AddItem(CString("Bucket Brigade.Real8"), true));
+	//graphItems.Add(graphGroup->AddItem(CString("Random.Real8"), true));
+	//graphGroup->ReadAsync(graphItems, this);
 
 }
 
 void CClientDlg::Complete(Transaction &transaction)
 {
+	WaitForSingleObject(m_mutex, INFINITE);
+	const CAtlArray<OpcItem*>* items = transaction.GetItems();
 
-
-	// Just items in list are here
-	for(unsigned i = 0; i < m_listItems.GetCount(); i++)
+	for(unsigned i = 0; i < items->GetCount(); i++)
 	{
-		OpcItem* item = m_listItems.GetAt(i);
-		const OpcItemData* data = transaction.GetItemValue(item);
-
-		int idx = m_LstTags.InsertItem(i, m_listItems.GetAt(i)->GetName());
-		CString tmp;
-		tmp.AppendFormat("%d", data->vDataValue.dblVal);
-		m_LstTags.SetItemText(idx, 1, tmp);
-		m_LstIndexes.SetAt(&m_listItems.GetAt(i)->GetName(), idx);
+		CString name(items->GetAt(i)->GetName());
+		
+		m_itemValues.SetAt(&name, transaction.GetItemValue(items->GetAt(i))->vDataValue.dblVal);
 	}
+	ReleaseMutex(m_mutex);
+
+	//// Just items in list are here
+	//for(unsigned i = 0; i < m_listItems.GetCount(); i++)
+	//{
+	//	OpcItem* item = m_listItems.GetKeyAt(i);
+	//	
+	//	const OpcItemData* data = transaction.GetItemValue(item);
+
+	//	int idx = m_LstTags.InsertItem(i, m_listItems.GetAt(i)->GetName());
+	//	CString tmp;
+	//	tmp.AppendFormat("%d", data->vDataValue.dblVal);
+	//	m_LstTags.SetItemText(idx, 1, tmp);
+	//	m_LstIndexes.SetAt(&m_listItems.GetAt(i)->GetName(), idx);
+	//}
+
 }
 
 void CClientDlg::OnDataChange(OpcGroup& group, CAtlMap<OpcItem *, OpcItemData *> & changes)
 {
-	if (group.GetName() == "ListGroup")
-	{
+	WaitForSingleObject(m_mutex, INFINITE);
 		POSITION pos = changes.GetStartPosition();
 
 		while (pos != NULL)
@@ -244,21 +265,45 @@ void CClientDlg::OnDataChange(OpcGroup& group, CAtlMap<OpcItem *, OpcItemData *>
 			OpcItem* item = changes.GetKeyAt(pos);
 			OpcItemData* data = changes.GetValueAt(pos);
 
-			POSITION idxpos = m_LstIndexes.Lookup(&item->GetName());
-
-			int idx = 0;
-			if (idxpos != NULL)
+			CString name(item->GetName());
+			CAtlMap<CString*, DOUBLE>::CPair* p = m_itemValues.Lookup(&name);
+			if (p == NULL)
 			{
-				idx = m_LstIndexes.GetValueAt(idxpos);
-				CString tmp;
-				tmp.AppendFormat("%d", data->vDataValue.dblVal);
-				m_LstTags.SetItemText(idx, 1, tmp);
+				m_itemValues.SetAt(&name, data->vDataValue.dblVal);
 			}
-
+			else
+			{
+				p->m_value = data->vDataValue.dblVal;
+			}
 			++pos;
 		}
-	}
-	else if (group.GetName() == "GraphGroup")
-	{
-	}
+
+		ReleaseMutex(m_mutex);
+
+//	if (group.GetName() == "ListGroup")
+//	{
+//		POSITION pos = changes.GetStartPosition();
+//
+//		while (pos != NULL)
+//		{
+//			OpcItem* item = changes.GetKeyAt(pos);
+//			OpcItemData* data = changes.GetValueAt(pos);
+//
+//			POSITION idxpos = m_LstIndexes.Lookup(&item->GetName());
+//
+//			int idx = 0;
+//			if (idxpos != NULL)
+//			{
+//				idx = m_LstIndexes.GetValueAt(idxpos);
+//				CString tmp;
+//				tmp.AppendFormat("%d", data->vDataValue.dblVal);
+//				m_LstTags.SetItemText(idx, 1, tmp);
+//			}
+//
+//			++pos;
+//		}
+//	}
+//	else if (group.GetName() == "GraphGroup")
+//	{
+//	}
 }
