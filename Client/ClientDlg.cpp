@@ -195,11 +195,68 @@ void CClientDlg::OnCbnSelchangeCombo1()
 		// TODO: Release m_OpcServer
 	}
 
-	CString server;
-	m_CmbServers.GetLBText(m_CmbServers.GetCurSel(), server);
+	InitDisplay();
 
-	m_OpcServer = OpcHost::ConnectDa(server);
+	OpcGroup* group = 0;
+	OpcGroup* graphGroup = 0;
 
+	try
+	{
+		CString server;
+		m_CmbServers.GetLBText(m_CmbServers.GetCurSel(), server);
+
+		m_OpcServer = OpcHost::ConnectDa(server);
+
+		unsigned long refreshRate;
+		group = m_OpcServer->MakeGroup("List", true, 500, refreshRate, 0.0);
+		group->EnableAsynch(*this);
+
+		CAtlArray<OpcItem*> listItems;
+		listItems.Add(group->AddItem(m_ilName1, true));
+		listItems.Add(group->AddItem(m_ilName2, true));
+		listItems.Add(group->AddItem(m_ilName3, true));
+		m_allItems.Append(listItems);
+		group->ReadAsync(listItems, this);
+
+		graphGroup = m_OpcServer->MakeGroup("Graph", true, 500, refreshRate, 0.0);
+		graphGroup->EnableAsynch(*this);
+
+		CAtlArray<OpcItem*> graphItems;
+		graphItems.Add(graphGroup->AddItem(m_igName1, true));
+		graphItems.Add(graphGroup->AddItem(m_igName2, true));
+		graphItems.Add(graphGroup->AddItem(m_igName3, true));
+		graphItems.Add(graphGroup->AddItem(m_igName4, true));
+		m_allItems.Append(graphItems);
+		graphGroup->ReadAsync(graphItems, this);
+
+		SetTimer(1, 250, NULL);
+	}
+	catch (OpcException& oe)
+	{
+		MessageBox(oe.Reason(), "Error");
+
+		if (group != 0)
+			delete group;
+		if (graphGroup != 0)
+			delete graphGroup;
+		if (m_OpcServer != 0)
+			delete m_OpcServer;
+	}
+	catch (...)
+	{
+		MessageBox("Unknown error occurred.", "Error");
+
+		if (group != 0)
+			delete group;
+		if (graphGroup != 0)
+			delete graphGroup;
+		if (m_OpcServer != 0)
+			delete m_OpcServer;
+	}
+}
+
+void CClientDlg::InitDisplay()
+{
 	m_LstTags.DeleteAllItems();
 	m_LstTags.InsertColumn(0, "Tag", LVCFMT_LEFT, 180, 0);
 	m_LstTags.InsertColumn(1, "Value", LVCFMT_LEFT, 100, 0);
@@ -250,31 +307,6 @@ void CClientDlg::OnCbnSelchangeCombo1()
 	idx = m_LstTags.InsertItem(i, m_ilName3);
 	m_LstTags.SetItemText(idx, 1, "0");
 	m_LstIndexes.SetAt(m_ilName3, idx);
-
-	unsigned long refreshRate;
-	OpcGroup* group = m_OpcServer->MakeGroup("List", true, 500, refreshRate, 0.0);
-	group->EnableAsynch(*this);
-
-	CAtlArray<OpcItem*> listItems;
-	listItems.Add(group->AddItem(m_ilName1, true));
-	listItems.Add(group->AddItem(m_ilName2, true));
-	listItems.Add(group->AddItem(m_ilName3, true));
-	m_allItems.Append(listItems);
-	group->ReadAsync(listItems, this);
-
-	OpcGroup* graphGroup = m_OpcServer->MakeGroup("Graph", true, 500, refreshRate, 0.0);
-	graphGroup->EnableAsynch(*this);
-
-	CAtlArray<OpcItem*> graphItems;
-	graphItems.Add(graphGroup->AddItem(m_igName1, true));
-	graphItems.Add(graphGroup->AddItem(m_igName2, true));
-	graphItems.Add(graphGroup->AddItem(m_igName3, true));
-	graphItems.Add(graphGroup->AddItem(m_igName4, true));
-	m_allItems.Append(graphItems);
-	graphGroup->ReadAsync(graphItems, this);
-
-	// TODO: Set these and their values to be updated on timer...
-	SetTimer(1, 250, NULL);
 }
 
 void CClientDlg::Complete(Transaction &transaction)

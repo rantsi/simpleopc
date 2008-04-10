@@ -2,7 +2,6 @@
 #include "OpcHost.h"
 #include "Transaction.h"
 #include "OpcItemData.h"
-#include "Property.h"
 
 // Forward declaration
 class OpcGroup;
@@ -31,14 +30,6 @@ public:
 	DWORD GetAccessRights();
 	OPCHANDLE GetHandle();
 	CString & GetName();
-
-	void GetSupportedProperties(CAtlArray<PropertyDescription> &desc);
-
-	
-	/**
-	* retreive the OPC item properties for the descriptors passed. Any data previously existing in propsRead will be destroyed.
-	*/
-	void GetProperties(const CAtlArray<PropertyDescription> &propsToRead, ATL::CAutoPtrArray<PropertyValue> &propsRead);
 
 private:
 	OPCHANDLE serversItemHandle;

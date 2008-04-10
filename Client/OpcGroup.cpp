@@ -148,7 +148,7 @@ OpcItem * OpcGroup::AddItem(CString &itemName, bool active)
 	names.Add(itemName);
 	if (AddItems(names, itemsCreated, errors, active)!= 0)
 	{
-		throw OpcException("Failed to add item");
+		throw OpcException("Failed to add item to group.");
 	}
 	return itemsCreated[0];
 }
@@ -181,7 +181,7 @@ int OpcGroup::AddItems(CAtlArray<CString>& itemName, CAtlArray<OpcItem *>& items
 	delete[] itemDef;
 	if (FAILED(result))
 	{
-		throw OpcException("Failed to add items");
+		throw OpcException("Failed to add items to group.");
 	}
 
 	int errorCount = 0;

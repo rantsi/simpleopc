@@ -41,6 +41,7 @@ public:
 	void UpdateDisplay();
 
 protected:
+	void InitDisplay();
 	void Plot(CNtgraphctrl3& graph, CString& name);
 	void UpdateListValue(CString& name);
 

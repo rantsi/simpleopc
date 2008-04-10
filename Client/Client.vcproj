@@ -244,10 +244,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Property.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -339,10 +335,6 @@
 			</File>
 			<File
 				RelativePath=".\OpcServer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Property.h"
 				>
 			</File>
 			<File
