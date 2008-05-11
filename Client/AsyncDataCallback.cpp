@@ -62,7 +62,6 @@ STDMETHODIMP AsyncDataCallback::OnDataChange(DWORD Transid, OPCHANDLE grphandle,
 
 	if (Transid != 0)
 	{
-		// it is a result of a refresh (see p106 of spec)
 		Transaction & trans = *(Transaction *)Transid; 
 		UpdateOpcData(trans.opcData, count, clienthandles, values,quality,time,errors);
 		trans.SetCompleted();	
@@ -84,7 +83,6 @@ STDMETHODIMP AsyncDataCallback::OnReadComplete(DWORD Transid, OPCHANDLE grphandl
 	OPCHANDLE * clienthandles, VARIANT* values, WORD * quality,
 	FILETIME * time, HRESULT * errors)
 {
-	// TODO this is bad  - server could corrupt address - need to use look up table
 	Transaction & trans = *(Transaction *)Transid; 
 	UpdateOpcData(trans.opcData, count, clienthandles, values,quality,time,errors);
 	trans.SetCompleted();
@@ -95,12 +93,10 @@ STDMETHODIMP AsyncDataCallback::OnReadComplete(DWORD Transid, OPCHANDLE grphandl
 STDMETHODIMP AsyncDataCallback::OnWriteComplete(DWORD Transid, OPCHANDLE grphandle, HRESULT mastererr, 
 	DWORD count, OPCHANDLE * clienthandles, HRESULT * errors)
 {
-	// TODO this is bad  - server could corrupt address - need to use look up table
 	Transaction & trans = *(Transaction *)Transid; 
 
 	for (unsigned i = 0; i < count; i++)
 	{
-		// TODO this is bad  - server could corrupt address - need to use look up table
 		OpcItem * item = (OpcItem *)clienthandles[i];
 		trans.SetItemError(item, errors[i]); // this records error state - may be good
 	}
@@ -142,7 +138,6 @@ void AsyncDataCallback::UpdateOpcData(OpcItem_DataMap &opcData, DWORD count, OPC
 {
 	for (unsigned i = 0; i < count; i++)
 	{
-		// TODO this is bad  - server could corrupt address - need to use look up table
 		OpcItem * item = (OpcItem *)clienthandles[i];
 		OpcItemData * data = MakeOpcDataItem(values[i], quality[i], time[i], errors[i]);
 		OpcItem_DataMap::CPair* pair = opcData.Lookup(item);

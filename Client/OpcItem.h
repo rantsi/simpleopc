@@ -11,9 +11,6 @@ class OpcItem
 public:
 	~OpcItem();
 
-	void WriteSync(VARIANT &data);
-
-
 	void ReadSync(OpcItemData &data, OPCDATASOURCE source);
 
 	/**
@@ -21,13 +18,6 @@ public:
 	*/
 	Transaction* ReadAsynch(ITransactionComplete *transactionCB = NULL);
 
-
-	/**
-	* returned transaction object is owned
-	*/
-	Transaction * WriteAsynch(VARIANT &data, ITransactionComplete *transactionCB = NULL);
-
-	DWORD GetAccessRights();
 	OPCHANDLE GetHandle();
 	CString & GetName();
 
